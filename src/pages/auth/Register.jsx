@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-// import { createUser } from '../store/authSlice';
+import { useRegisterMutation } from '../../features/ApplicationApi';
 
 const Register = () => {
-    const dispatch = useDispatch();
-    const { loading, error } = useSelector((state) => state.auth);
+    const [registerMutation, { isLoading }] = useRegisterMutation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -18,11 +16,17 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await dispatch(createUser(formData));
-        if (result.type === 'auth/createUser/fulfilled') {
-            alert('User created successfully!');
-            setFormData({ name: '', email: '', password: '', role: 'user' });
-        }
+        
+        registerMutation(formData)
+            .unwrap()
+            .then(() => {
+                alert('User registered successfully!');
+                setFormData({ name: '', email: '', password: '', role: 'user' });
+            })
+            .catch((error) => {
+                console.error('Registration failed:', error);
+                alert('Registration failed. Please try again.');
+            });
     };
 
     return (
@@ -63,16 +67,14 @@ const Register = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="user">User</option>
-                    <option value="admin">Admin</option>
                 </select>
                 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
                 <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200 disabled:opacity-50"
                 >
-                    {loading ? 'Creating...' : 'Create User'}
+                    {isLoading ? 'Registering...' : 'Register'}
                 </button>
             </form>
         </div>

@@ -28,28 +28,22 @@ const Login = () => {
   const dispatch = useDispatch();
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Sending login data:', data);
-
-    // Mock login when no backend is available
-  
-
+    
     try {
       const res = await Login(data).unwrap();
-      dispatch(createUser(res));
-      setData({ email: "", password: "" });
+      console.log('Login response:', res);
+      
+      if (res) {
+        dispatch(createUser(res));
+        setData({ email: "", password: "" });
+        setError('');
+      } else {
+        throw new Error('No response from server');
+      }
     } catch (error) {
       console.log('Login error:', error);
-      // Use mock login as fallback
-      if (data.email && data.password) {
-        const mockUser = {
-          user: { id: 1, email: data.email, name: 'John Doe', role: 'user' },
-          token: 'mock-jwt-token'
-        };
-        dispatch(createUser(mockUser));
-        setData({ email: "", password: "" });
-      } else {
-        setError('Please enter email and password');
-      }
+      alert('Invalid email or password');
+      setError('Invalid email or password');
     }
   };
   
