@@ -1,15 +1,15 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Navbar from "../components/Navbar";
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import Home from "../pages/auth/Home";
-import CreateEvent from "../pages/auth/createEvent";
-import UpdateEvent from "../pages/auth/updateEvent";
-import Payment from "../pages/auth/Payment";
-import CreateUser from "../pages/auth/CreateUser.jsx";
-import UserDetails from '../pages/auth/userDetails';
-import Ticket from "../pages/auth/Ticket";
+import Navbar from "../components/Navbar.jsx";
+import Login from "../pages/auth/Login.jsx";
+import Register from "../pages/auth/Register.jsx";
+import Home from "../pages/auth/Home.jsx";
+import CreateEvent from "../pages/auth/createEvent.jsx";
+import UpdateEvent from "../pages/auth/updateEvent.jsx";
+import Payment from "../pages/auth/Payment.jsx";
+import CreateUser from "../pages/auth/createUser.jsx";
+import UserDetails from '../pages/auth/userDetails.jsx';
+import Ticket from "../pages/auth/Ticket.jsx";
 
 
 const ProtectedRoute = ({ children }) => {
