@@ -1,5 +1,6 @@
 # EVENT MANAGEMENT
-
+*Admin User - kannan11071985@gmail.com
+*password - password123
 
 ## Table of Contents
 
