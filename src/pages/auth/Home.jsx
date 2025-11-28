@@ -1,13 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
-import { useFetchEventsQuery, useDeleteEventMutation } from "../../features/ApplicationApi";
+import { useFetchEventsQuery, useDeleteEventMutation, useFetchTicketQuery  } from "../../features/ApplicationApi";
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
-// import multer from 'multer';
-
-
-
-
+import Ticket from './Ticket';
 
 const Home = () => {
     const user = useSelector((state) => state.auth.user);
@@ -20,7 +16,24 @@ const Home = () => {
     const eventsPerPage = 9;
     
     const eventList = events?.data || [];
-    
+
+    // --- 1. NEW DATE FORMATTING FUNCTION ---
+    const formatEventDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        // This formats it as: Friday, 28 November 2024, 10:30 am
+        return date.toLocaleString('en-GB', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
+    };
+    // ---------------------------------------
+
     // Sort events: future events first, then by date
     const sortedEvents = [...eventList].sort((a, b) => {
         const dateA = new Date(a.date);
@@ -40,11 +53,6 @@ const Home = () => {
     const startIndex = (currentPage - 1) * eventsPerPage;
     const currentEvents = sortedEvents.slice(startIndex, startIndex + eventsPerPage);
     
-    console.log('API Response:', { events, isLoading, error });
-    console.log('Image Base URL:', imageBaseUrl);
-    console.log('Sample event:', eventList[0]);
-    
-
     const handleDelete = (event) => {
         if (window.confirm(`Are you sure you want to delete "${event.title}"?`)) {
             const eventId = event._id || event.id;
@@ -62,8 +70,6 @@ const Home = () => {
     if (isLoading) return <Loading />
     if (error) return <div>Error: {error.status}</div>
 
-
-     
     return (
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
@@ -136,6 +142,7 @@ const Home = () => {
                                 {event.location}
                             </p>
                           
+                            {/* --- 2. UPDATED DATE DISPLAY HERE --- */}
                             <p className={`flex items-center gap-2 ${
                                 new Date(event.date) < new Date() ? 'text-red-600' : 'text-gray-600'
                             }`}>
@@ -144,20 +151,24 @@ const Home = () => {
                                 }`} fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                                 </svg>
-                                {event.date}
+                                {formatEventDate(event.date)}
                                 {new Date(event.date) < new Date() && (
                                     <span className="text-red-500 text-sm font-semibold">EXPIRED</span>
                                 )}
                             </p>
+                            {/* ------------------------------------ */}
                             
                              <p className="text-gray-600 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 18v3h3v-3h10v3h3v-3h1c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h1zm0-8h16v6H4v-6z"/>
                                 </svg>
-                                {event.totalSeats} Seats
+                                {event.totalSeats} Total Seats
                             </p>
                             <p className="text-gray-600 flex items-center gap-2">
-                                
+                                <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M4 18v3h3v-3h10v3h3v-3h1c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h1zm0-8h16v6H4v-6z"/>
+                                </svg>
+                                {event.totalSeats - Ticket.ticketCount } Availablle Seats
                             </p>
                             <button className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 flex items-center gap-2"
                              onClick={() => navigate('/payment', { 
@@ -186,10 +197,7 @@ const Home = () => {
                                 Regular: ${event.regulartickets}
                             </button>
                            
-
                             </div>
-
-                            
                         </div>
                     ))}
                 </div>
@@ -231,10 +239,7 @@ const Home = () => {
                 </div>
             )}
         </div>
-        
-       
     )
 }
-
 
 export default Home;
