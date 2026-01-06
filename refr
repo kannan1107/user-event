@@ -1,0 +1,18 @@
+
+    "Title": "Miriam Wiza",
+    "eventId": "68dfda99c6b103dc0072f901",
+    "userId": "68daa95dff6284da1f31d3d2",
+    "userName": "velammal",
+   "userEmail": "velammal42@gmail.com",
+    "eventTitle": 'Miriam Wiza',
+    ticketType: "Regular",
+    "ticketCount": "1",
+    "unitPrice": "10000",
+    totalAmount: "10000",
+    "paymentMethod": "Stripe",
+    "paymentDate": '2025-10-29T14:37:35.091Z',
+    "status": "completed",
+    "stripeTokenId": "tok_1SNaV9BkenI78onIj8HbBcc8"
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZGFhOTVkZmY2Mjg0ZGExZjMxZDNkMiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTc1NzM4MCwiZXhwIjoxNzYxODQzNzgwfQ.XByif1mINpvh5IqGbF9cBtHWoZ4CM8yaAWJIswTPpak
