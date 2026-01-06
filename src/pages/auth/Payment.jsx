@@ -31,7 +31,14 @@ const Payment = () => {
     }
   }
   
-  const numericPrice = parseFloat(actualPrice) || 0;
+  // More robust price parsing
+  let numericPrice = 0;
+  if (actualPrice !== undefined && actualPrice !== null) {
+    // Remove any currency symbols and parse
+    const cleanPrice = String(actualPrice).replace(/[$,]/g, '');
+    numericPrice = parseFloat(cleanPrice) || 0;
+  }
+  
   const totalAmount = (numericPrice * ticketCount).toFixed(2);
   
   console.log('Final price values:', { actualPrice, numericPrice, totalAmount });
@@ -67,8 +74,8 @@ const Payment = () => {
             eventTitle: event.title,
             ticketType,
             ticketCount,
-            unitPrice: price * 100, // Assuming price needs to be in cents
-            totalAmount: totalAmount * 100, // Assuming totalAmount needs to be in cents
+            unitPrice: numericPrice * 100, // Use numericPrice instead of price
+            totalAmount: parseFloat(totalAmount) * 100, // Parse totalAmount to ensure it's a number
             paymentMethod,
             paymentDate: new Date().toISOString(),
             status: 'completed',
