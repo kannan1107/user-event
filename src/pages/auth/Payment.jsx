@@ -32,7 +32,7 @@ const Payment = () => {
   }
   
   const numericPrice = parseFloat(actualPrice) || 0;
-  const totalAmount = (numericPrice * ticketCount).toFixed(2);
+  const totalAmount = +Number(numericPrice * ticketCount).toFixed(2);
   
   console.log('Final price values:', { actualPrice, numericPrice, totalAmount });
 
