@@ -7,7 +7,7 @@ import Home from "../pages/auth/Home";
 import CreateEvent from "../pages/auth/createEvent";
 import UpdateEvent from "../pages/auth/updateEvent";
 import Payment from "../pages/auth/Payment";
-import CreateUser from "../pages/auth/CreateUser";
+import CreateUser from "../pages/auth/createUser";
 import UserDetails from '../pages/auth/userDetails';
 import Ticket from "../pages/auth/Ticket";
 
