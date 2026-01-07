@@ -67,8 +67,8 @@ const Payment = () => {
             eventTitle: event.title,
             ticketType,
             ticketCount,
-            unitPrice: price * 100, // Assuming price needs to be in cents
-            totalAmount: totalAmount * 100, // Assuming totalAmount needs to be in cents
+            unitPrice: numericPrice * 100, // Use numericPrice instead of price
+            totalAmount: parseFloat(totalAmount) * 100, // Parse totalAmount to ensure it's a number
             paymentMethod,
             paymentDate: new Date().toISOString(),
             status: 'completed',
