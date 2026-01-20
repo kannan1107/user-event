@@ -119,10 +119,13 @@ const Home = () => {
                             {event.image && (
                                 <div className="mb-4">
                                     <img 
-                                        src={`${imageBaseUrl}${event.image}`} 
+                                        src={event.image.startsWith('http') ? event.image : `${imageBaseUrl}${event.image}`}
                                         alt={event.title || event.name} 
                                         className="w-full h-48 object-cover rounded-md"
-                                        onError={(e) => console.log('Image failed:', `${imageBaseUrl}${event.image}`)}
+                                        onError={(e) => {
+                                            console.log('Image failed:', event.image);
+                                            e.target.style.display = 'none';
+                                        }}
                                     />
                                 </div>
                             )}
