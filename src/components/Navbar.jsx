@@ -27,12 +27,12 @@ console.log(user);
             {user? (<>
             
             <Link to="/home" className="hover:text-blue-200">Home</Link>
-            <Link to="/createUser" className="hover:text-blue-200">createUser</Link>
-            <Link to="/userDetails" className="hover:text-blue-200">userDetails</Link>
+            <Link to="/createUser" className="hover:text-blue-200">Create User</Link>
+            <Link to="/userDetails" className="hover:text-blue-200">User Details</Link>
             <Link to="/ticket" className="hover:text-blue-200">Ticket</Link>
      
             
-            <button onClick={()=>dispatch(logout())}>LogOut</button></>
+            <button onClick={()=>dispatch(logout())}>Log Out</button></>
             ): (
               <>
               <Link to="/login" className="hover:text-blue-200">Login</Link>
