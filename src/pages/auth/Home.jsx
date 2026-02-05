@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import { useFetchEventsQuery, useDeleteEventMutation } from "../../features/ApplicationApi";
 import Loading from '../../components/Loading';
+import EventFilter from '../../components/EventFilter';
 import { useNavigate } from 'react-router-dom';
 // import multer from 'multer';
 
@@ -17,25 +18,31 @@ const Home = () => {
     
     const [deleteEventMutation] = useDeleteEventMutation();
     const [currentPage, setCurrentPage] = useState(1);
+    const [filteredEvents, setFilteredEvents] = useState([]);
     const eventsPerPage = 9;
     
     const eventList = events?.data || [];
 
     
     // Sort events: future events first, then by date
-    const sortedEvents = [...eventList].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        const now = new Date();
-        
-        const isAFuture = dateA >= now;
-        const isBFuture = dateB >= now;
-        
-        if (isAFuture && !isBFuture) return -1;
-        if (!isAFuture && isBFuture) return 1;
-        
-        return dateA - dateB;
-    });
+    const sortEvents = (events) => {
+        return [...events].sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            const now = new Date();
+            
+            const isAFuture = dateA >= now;
+            const isBFuture = dateB >= now;
+            
+            if (isAFuture && !isBFuture) return -1;
+            if (!isAFuture && isBFuture) return 1;
+            
+            return dateA - dateB;
+        });
+    };
+    
+    const eventsToShow = filteredEvents.length > 0 ? filteredEvents : eventList;
+    const sortedEvents = sortEvents(eventsToShow);
     
     const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
     const startIndex = (currentPage - 1) * eventsPerPage;
@@ -68,6 +75,7 @@ const Home = () => {
     return (
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
+            <EventFilter events={eventList} onFilterChange={setFilteredEvents} />
             {user?.role == "admin" ? (
                 <div className="mb-6 flex justify-end">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate('/createEvent')}>
