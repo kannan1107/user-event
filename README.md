@@ -1,8 +1,8 @@
 # Event Management
 
 ## Login Details
-- email kannan11071985@gmail.com
-- password123
+- email - kannan11071985@gmail.com
+- password - password123
 
 ## Table of Contents
 - [About The Project](#about-the-project)
