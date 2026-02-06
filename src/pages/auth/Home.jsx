@@ -76,19 +76,13 @@ const Home = () => {
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
             <EventFilter events={eventList} onFilterChange={setFilteredEvents} />
-            {user?.role == "admin" ? (
+            {user?.role == "admin" && (
                 <div className="mb-6 flex justify-end">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate('/createEvent')}>
                         Create Event
                     </button>
                 </div>
-            ) : (
-                <div className="mb-6 flex justify-end">
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Book Event
-                    </button>
-                </div>
-            ) }
+            )}
             {currentEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {currentEvents.map((event) => (
@@ -195,7 +189,7 @@ const Home = () => {
 
                                 
                             
-                            {user ? (
+                            {user && user.role !== "admin" ? (
                                 <>
                                     {event.vipSeats > 0 && (
                                         <button 
@@ -267,16 +261,7 @@ const Home = () => {
                                         </div>
                                     )}
                                 </>
-                            ) : (
-                                <div className="col-span-2 text-center">
-                                    <button 
-                                        onClick={() => navigate('/login')}
-                                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 font-medium"
-                                    >
-                                        Login to Book Tickets
-                                    </button>
-                                </div>
-                            )}
+                            ) : null}
 
                             {/* <button className="bg-gray-100 text-gray-700 px-2 w-[150px] py-2 rounded-full hover:bg-gray-200 flex items-center gap-2 border border-gray-300" 
                             onClick={() => navigate('/payment', { 
