@@ -2,7 +2,7 @@
 
 ## Login Details
 - email - kannan11071985@gmail.com
-- password - password123
+- password - kannan11
 
 ## Table of Contents
 - [About The Project](#about-the-project)
