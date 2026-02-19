@@ -20,13 +20,13 @@ const CreateEvent = () => {
     totalSeats: "",
     vipSeats: "",
     regularSeats: "",
+    guests: [{ name: "", photo: null, position: "" }],
   };
 
   const [data, setData] = useState({ ...defaultState });
   const [createEventMutation, { isLoading }] = useCreateEventMutation();
 
   const handleChange = (event) => {
-    // Special handling for file inputs
     if (
       (event.target.name === "image" || event.target.name === "video") &&
       event.target.files
@@ -43,6 +43,28 @@ const CreateEvent = () => {
     }
   };
 
+  const addGuest = () => {
+    setData((state) => ({
+      ...state,
+      guests: [...state.guests, { name: "", photo: null, position: "" }],
+    }));
+  };
+
+  const removeGuest = (index) => {
+    setData((state) => ({
+      ...state,
+      guests: state.guests.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleGuestChange = (index, field, value) => {
+    setData((state) => {
+      const newGuests = [...state.guests];
+      newGuests[index][field] = value;
+      return { ...state, guests: newGuests };
+    });
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -50,6 +72,8 @@ const CreateEvent = () => {
       alert("Please login first to create events");
       return;
     }
+
+    const validGuests = data.guests.filter(g => g.name.trim() && g.position.trim());
 
     const formData = new FormData();
     formData.append("title", data.title);
@@ -63,14 +87,22 @@ const CreateEvent = () => {
     formData.append("totalSeats", data.totalSeats);
     formData.append("vipSeats", data.vipSeats);
     formData.append("regularSeats", data.regularSeats);
+    formData.append("guests", JSON.stringify(validGuests));
 
-    // FIXED: Only append files if they exist (removed duplicate logic)
     if (data.image) {
       formData.append("image", data.image);
     }
     if (data.video) {
       formData.append("video", data.video);
     }
+
+    validGuests.forEach((guest, index) => {
+      formData.append(`guests[${index}][name]`, guest.name);
+      formData.append(`guests[${index}][position]`, guest.position);
+      if (guest.photo) {
+        formData.append(`guestPhotos`, guest.photo);
+      }
+    });
 
     createEventMutation(formData)
       .unwrap()
@@ -239,6 +271,51 @@ const CreateEvent = () => {
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+          </div>
+
+          {/* Guests Section */}
+          <div className="border-t pt-4">
+            <div className="flex justify-between items-center mb-4">
+              <label className="block font-semibold">Event Guests</label>
+              <button
+                type="button"
+                onClick={addGuest}
+                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+              >
+                + Add Guest
+              </button>
+            </div>
+            {data.guests.map((guest, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3 p-3 border rounded">
+                <input
+                  type="text"
+                  placeholder="Guest Name"
+                  value={guest.name}
+                  onChange={(e) => handleGuestChange(index, "name", e.target.value)}
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Position/Role"
+                  value={guest.position}
+                  onChange={(e) => handleGuestChange(index, "position", e.target.value)}
+                  className="p-2 border rounded"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleGuestChange(index, "photo", e.target.files[0])}
+                  className="p-2 border rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeGuest(index)}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Pricing Section */}

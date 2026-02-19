@@ -45,6 +45,13 @@ const Payment = () => {
 
   const processPayment = (paymentMethod, stripeToken = null) => { // Added stripeToken parameter
     try {
+      const availableSeats = ticketType === 'VIP' ? event.vipSeats : event.regularSeats;
+      
+      if (ticketCount > availableSeats) {
+        alert(`Only ${availableSeats} ${ticketType} tickets available. Cannot book ${ticketCount} tickets.`);
+        return;
+      }
+
       // Simulate payment processing
       alert(`Processing ${paymentMethod} payment for $${totalAmount}...`);
       const paymentData = { Title: event.title, eventId: event._id ||
@@ -68,7 +75,7 @@ const Payment = () => {
             ticketType,
             ticketCount,
             unitPrice: numericPrice * 100, // Use numericPrice instead of price
-            totalAmount: parseFloat(totalAmount) * 100, // Parse totalAmount to ensure it's a number
+            totalAmount: parseFloat(totalAmount) , // Parse totalAmount to ensure it's a number
             paymentMethod,
             paymentDate: new Date().toISOString(),
             status: 'completed',
@@ -168,7 +175,14 @@ const Payment = () => {
                   </button>
                   <span className="font-semibold px-3">{ticketCount}</span>
                   <button
-                    onClick={() => setTicketCount(ticketCount + 1)}
+                    onClick={() => {
+                      const availableSeats = ticketType === 'VIP' ? event.vipSeats : event.regularSeats;
+                      if (ticketCount + 1 <= availableSeats) {
+                        setTicketCount(ticketCount + 1);
+                      } else {
+                        alert(`Only ${availableSeats} ${ticketType} tickets available!`);
+                      }
+                    }}
                     className="bg-gray-200 px-2 py-1 rounded"
                   >
                     +

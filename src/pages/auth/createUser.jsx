@@ -101,7 +101,7 @@ const createUser = () => {
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
-              <option value="organizer">viewer</option>
+              <option value="organizer">Organizer</option>
             </select>
           </div>
           <button

@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import { useFetchEventsQuery, useDeleteEventMutation } from "../../features/ApplicationApi";
 import Loading from '../../components/Loading';
+import EventFilter from '../../components/EventFilter';
 import { useNavigate } from 'react-router-dom';
 // import multer from 'multer';
 
@@ -17,25 +18,31 @@ const Home = () => {
     
     const [deleteEventMutation] = useDeleteEventMutation();
     const [currentPage, setCurrentPage] = useState(1);
+    const [filteredEvents, setFilteredEvents] = useState([]);
     const eventsPerPage = 9;
     
     const eventList = events?.data || [];
 
     
     // Sort events: future events first, then by date
-    const sortedEvents = [...eventList].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        const now = new Date();
-        
-        const isAFuture = dateA >= now;
-        const isBFuture = dateB >= now;
-        
-        if (isAFuture && !isBFuture) return -1;
-        if (!isAFuture && isBFuture) return 1;
-        
-        return dateA - dateB;
-    });
+    const sortEvents = (events) => {
+        return [...events].sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            const now = new Date();
+            
+            const isAFuture = dateA >= now;
+            const isBFuture = dateB >= now;
+            
+            if (isAFuture && !isBFuture) return -1;
+            if (!isAFuture && isBFuture) return 1;
+            
+            return dateA - dateB;
+        });
+    };
+    
+    const eventsToShow = filteredEvents.length > 0 ? filteredEvents : eventList;
+    const sortedEvents = sortEvents(eventsToShow);
     
     const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
     const startIndex = (currentPage - 1) * eventsPerPage;
@@ -61,32 +68,36 @@ const Home = () => {
     };
 
     if (isLoading) return <Loading />
-    if (error) return <div>Error: {error.status}</div>
+    if (error) {
+        const isConnectionError = error.status === 'FETCH_ERROR';
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-red-600">
+                <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <h2 className="text-2xl font-bold mb-2">Connection Error</h2>
+                <p>{isConnectionError ? "Cannot connect to the server. Please ensure the backend is running." : `Error: ${error.status}`}</p>
+            </div>
+        );
+    }
 
 
      
     return (
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
-            {user?.role == "admin" ? (
+            <EventFilter events={eventList} onFilterChange={setFilteredEvents} />
+            {(user?.role === "admin" || user?.role === "organizer") && (
                 <div className="mb-6 flex justify-end">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate('/createEvent')}>
                         Create Event
                     </button>
                 </div>
-            ) : (
-                <div className="mb-6 flex justify-end">
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Book Event
-                    </button>
-                </div>
-            ) }
+            )}
             {currentEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {currentEvents.map((event) => (
-                        <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-4 shadow relative">
-                            {user?.role === "admin" && (
-                                <div className="absolute top-2 right-2">
+                        <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-4 shadow relative cursor-pointer hover:shadow-xl transition" onClick={() => navigate('/eventDetails', { state: { event } })}>
+                            {(user?.role === "admin" || user?.role === "organizer") && (
+                                <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
                                     <div className="relative group">
                                         <button className="p-1 hover:bg-gray-100 rounded">
                                             <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -117,13 +128,21 @@ const Home = () => {
                                 </div>
                             )}
                             {event.image && (
-                                <div className="mb-4">
+                                <div className="mb-4 relative">
                                     <img 
-                                        src={`${imageBaseUrl}${event.image}`} 
+                                        src={event.image.startsWith('http') ? event.image : `${imageBaseUrl}${event.image}`}
                                         alt={event.title || event.name} 
                                         className="w-full h-48 object-cover rounded-md"
-                                        onError={(e) => console.log('Image failed:', `${imageBaseUrl}${event.image}`)}
+                                        onError={(e) => {
+                                            console.log('Image failed:', event.image);
+                                            e.target.style.display = 'none';
+                                        }}
                                     />
+                                    {/* Calendar Badge */}
+                                    <div className="absolute top-2 left-2 bg-white rounded-lg shadow-lg p-2 text-center min-w-[60px]">
+                                        <div className="text-xs font-semibold text-blue-600 uppercase">{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                                        <div className="text-2xl font-bold text-gray-800">{new Date(event.date).getDate()}</div>
+                                    </div>
                                 </div>
                             )}
                             <h3 className=" mb-2 text-center text-xl font-bold">{event.title || event.name}</h3>
@@ -184,7 +203,7 @@ const Home = () => {
 
                                 
                             
-                            {user ? (
+                            {user && user.role !== "admin" ? (
                                 <>
                                     {event.vipSeats > 0 && (
                                         <button 
@@ -256,16 +275,7 @@ const Home = () => {
                                         </div>
                                     )}
                                 </>
-                            ) : (
-                                <div className="col-span-2 text-center">
-                                    <button 
-                                        onClick={() => navigate('/login')}
-                                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 font-medium"
-                                    >
-                                        Login to Book Tickets
-                                    </button>
-                                </div>
-                            )}
+                            ) : null}
 
                             {/* <button className="bg-gray-100 text-gray-700 px-2 w-[150px] py-2 rounded-full hover:bg-gray-200 flex items-center gap-2 border border-gray-300" 
                             onClick={() => navigate('/payment', { 

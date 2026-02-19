@@ -125,6 +125,22 @@ export const appApi = createApi({
       providesTags: ["Ticket"],
     }),
 
+    fetchAllTickets: builder.query({
+      query: () => ({
+        url: "/payments/all-tickets",
+        method: "GET",
+      }),
+      providesTags: ["Ticket"],
+    }),
+
+    cancelTicket: builder.mutation({
+      query: (id) => ({
+        url: `/payments/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Ticket", "Event"],
+    }),
+
     fetchEvents: builder.query({
       query: () => ({
         url: "/events",
@@ -215,7 +231,7 @@ export const appApi = createApi({
     }),
     cancelEvent: builder.mutation({
       query: (id) => ({
-        url: `/events/cancel/${id}`,
+        url: `/cancel-ticket/:id`,
         method: "POST",
       }),
     }),
@@ -244,4 +260,6 @@ export const {
   useFetchUserQuery,
   useUpdateUserMutation,
   useFetchTicketQuery,
+  useFetchAllTicketsQuery,
+  useCancelTicketMutation,
 } = appApi;

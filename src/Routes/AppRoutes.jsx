@@ -10,6 +10,7 @@ import Payment from "../pages/auth/Payment";
 import CreateUser from "../pages/auth/createUser";
 import UserDetails from '../pages/auth/userDetails';
 import Ticket from "../pages/auth/Ticket";
+import EventDetails from "../pages/auth/eventDetails";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -21,6 +22,13 @@ const AdminRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
   if (!user) return <Navigate to="/login" />;
   if (user.role !== "admin") return <Navigate to="/home" />;
+  return children;
+};
+
+const OrganizerRoute = ({ children }) => {
+  const user = useSelector((state) => state.auth.user);
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== "organizer" && user.role !== "admin") return <Navigate to="/home" />;
   return children;
 };
 
@@ -36,9 +44,10 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register/>} />
         <Route path="/home" element={<ProtectedRoute><Home/></ProtectedRoute>} />
         <Route path="/createUser" element={<AdminRoute><CreateUser/></AdminRoute>} />
-        <Route path="/createEvent" element={<ProtectedRoute><CreateEvent/></ProtectedRoute>} />
-        <Route path="/updateEvent" element={<ProtectedRoute><UpdateEvent/></ProtectedRoute>} />
+        <Route path="/createEvent" element={<OrganizerRoute><CreateEvent/></OrganizerRoute>} />
+        <Route path="/updateEvent" element={<OrganizerRoute><UpdateEvent/></OrganizerRoute>} />
         <Route path="/ticket" element={<Ticket/>} />
+        <Route path="/eventDetails" element={<ProtectedRoute><EventDetails/></ProtectedRoute>} />
 
         <Route path="/userDetails" element={<AdminRoute><UserDetails /></AdminRoute>} /> 
         <Route path="/payment" element={<ProtectedRoute><Payment/></ProtectedRoute>} />
