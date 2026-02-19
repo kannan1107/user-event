@@ -97,4 +97,8 @@ const EventFilter = ({ events, onFilterChange }) => {
     );
 };
 
+<<<<<<< HEAD
 export default EventFilter;
+=======
+export default EventFilter;
+>>>>>>> 14fd09ef84a63e7de5e71b83ae409bc37fa4332d
