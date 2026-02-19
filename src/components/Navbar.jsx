@@ -36,10 +36,6 @@ console.log(user);
                 <Link to="/userDetails" className="hover:text-blue-200">User Details</Link>
               </>
             )}
-<<<<<<< HEAD
-           
-=======
->>>>>>> 14fd09ef84a63e7de5e71b83ae409bc37fa4332d
             <Link to="/ticket" className="hover:text-blue-200">Ticket</Link>
      
             
@@ -64,6 +60,3 @@ console.log(user);
 };
 
 export default Navbar;
-
-
-

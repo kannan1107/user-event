@@ -85,11 +85,7 @@ const Home = () => {
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
             <EventFilter events={eventList} onFilterChange={setFilteredEvents} />
-<<<<<<< HEAD
             {(user?.role === "admin" || user?.role === "organizer") && (
-=======
-            {user?.role == "admin" && (
->>>>>>> 14fd09ef84a63e7de5e71b83ae409bc37fa4332d
                 <div className="mb-6 flex justify-end">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate('/createEvent')}>
                         Create Event
