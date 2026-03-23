@@ -11,6 +11,7 @@ import CreateUser from "../pages/auth/createUser";
 import UserDetails from '../pages/auth/userDetails';
 import Ticket from "../pages/auth/Ticket";
 import EventDetails from "../pages/auth/eventDetails";
+import Analytics from "../pages/auth/Analytics";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -46,11 +47,12 @@ const AppRoutes = () => {
         <Route path="/createUser" element={<AdminRoute><CreateUser/></AdminRoute>} />
         <Route path="/createEvent" element={<OrganizerRoute><CreateEvent/></OrganizerRoute>} />
         <Route path="/updateEvent" element={<OrganizerRoute><UpdateEvent/></OrganizerRoute>} />
-        <Route path="/ticket" element={<Ticket/>} />
+        <Route path="/ticket" element={<ProtectedRoute><Ticket/></ProtectedRoute>} />
         <Route path="/eventDetails" element={<ProtectedRoute><EventDetails/></ProtectedRoute>} />
 
         <Route path="/userDetails" element={<AdminRoute><UserDetails /></AdminRoute>} /> 
         <Route path="/payment" element={<ProtectedRoute><Payment/></ProtectedRoute>} />
+        <Route path="/chart" element={<ProtectedRoute><Analytics/></ProtectedRoute>} />
       </Routes>
     </>
   )

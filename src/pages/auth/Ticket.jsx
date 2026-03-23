@@ -41,9 +41,11 @@ const Ticket = () => {
     } else if (!window.confirm(`Cancel booking for "${eventTitle}"?`)) return;
 
     try {
-      // Pass as query string to avoid [object Object] error
-      await cancelTicket(`${ticket._id}?cancelCount=${cancelCount}`).unwrap();
-      alert('Ticket cancelled successfully!');
+      const result = await cancelTicket(`${ticket._id}?cancelCount=${cancelCount}`).unwrap();
+      const remaining = currentTicketCount - cancelCount;
+      alert(remaining > 0
+        ? `${cancelCount} ticket(s) cancelled. You still have ${remaining} ticket(s) remaining.`
+        : 'Booking cancelled successfully!');
     } catch (error) {
       alert('Failed to cancel ticket.');
     }

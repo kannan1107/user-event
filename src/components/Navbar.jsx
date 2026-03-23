@@ -1,11 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
 // const [isLoggedIn , setIsLoggedIn] = useState(true);
 const user = useSelector((state) => state.auth.user);
 const dispatch = useDispatch();
+const navigate = useNavigate();
 console.log(user);
   
   return (
@@ -37,9 +38,10 @@ console.log(user);
               </>
             )}
             <Link to="/ticket" className="hover:text-blue-200">Ticket</Link>
+            <Link to="/chart" className="hover:text-blue-200">Chart</Link>
      
             
-            <button onClick={()=>dispatch(logout())}>Log Out</button></>
+            <button onClick={() => { dispatch(logout()); navigate('/login'); }}>Log Out</button></>
             ): (
               <>
               <Link to="/login" className="hover:text-blue-200">Login</Link>

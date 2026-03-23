@@ -1,47 +1,127 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProcessPaymentMutation } from '../../features/ApplicationApi';
-import StripeCheckout from 'react-stripe-checkout';
+import { loadStripe } from '@stripe/stripe-js';
 
-// import dotenv from 'dotenv' // This is usually for Node.js backend, not React frontend
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+const StripeCardForm = ({ clientSecret, intentLoading, fetchClientSecret, event, ticketType, ticketCount, numericPrice, totalAmount, user, navigate }) => {
+  const cardRef = useRef(null);
+  const cardElementRef = useRef(null);
+  const stripeRef = useRef(null);
+  const [processPaymentMutation] = useProcessPaymentMutation();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (!clientSecret || cardElementRef.current) return;
+    stripePromise.then((stripe) => {
+      stripeRef.current = stripe;
+      const elements = stripe.elements();
+      const card = elements.create('card', {
+        hidePostalCode: true,
+        style: { base: { fontSize: '16px', color: '#424770', '::placeholder': { color: '#aab7c4' }, iconColor: '#6772e5' }, invalid: { color: '#9e2146' } },
+      });
+      card.mount(cardRef.current);
+      cardElementRef.current = card;
+    });
+    return () => { if (cardElementRef.current) { cardElementRef.current.destroy(); cardElementRef.current = null; } };
+  }, [clientSecret]);
+
+  if (!clientSecret) {
+    return (
+      <button onClick={fetchClientSecret} disabled={intentLoading}
+        className="w-full bg-purple-100 text-purple-700 py-2 rounded hover:bg-purple-200 disabled:opacity-50">
+        {intentLoading ? 'Initializing...' : 'Pay with Card'}
+      </button>
+    );
+  }
+
+  const handleStripeSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripeRef.current || !cardElementRef.current || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const { error, paymentIntent } = await stripeRef.current.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElementRef.current },
+      });
+      if (error) { alert(`Payment failed: ${error.message}`); setIsProcessing(false); return; }
+
+      await processPaymentMutation({
+        id: event._id || event.id,
+        paymentData: {
+          Title: event.title,
+          eventId: event._id || event.id,
+          userId: user?.id || user?._id,
+          userName: user?.name || 'Guest',
+          userEmail: user?.email,
+          eventTitle: event.title,
+          ticketType,
+          ticketCount,
+          unitPrice: numericPrice * 100,
+          totalAmount: Math.round(totalAmount * 100),
+          paymentMethod: 'Stripe',
+          paymentId: paymentIntent.id,
+          status: 'completed',
+        },
+      }).unwrap();
+
+      alert(`✅ Payment successful!\n${ticketCount} ${ticketType} ticket(s) for ${event.title}\nTotal: $${totalAmount}`);
+      navigate('/');
+    } catch (err) {
+      alert(`Payment error: ${err.message}`);
+    }
+    setIsProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handleStripeSubmit}>
+      <div className="text-xs text-gray-400 mb-2">Test card: 4242 4242 4242 4242 | MM/YY: any future | CVC: any 3 digits</div>
+      <div ref={cardRef} className="border border-gray-300 rounded p-3 bg-white" />
+      <button type="submit" disabled={isProcessing}
+        className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600 mt-3 disabled:opacity-50">
+        {isProcessing ? 'Processing...' : 'Pay with Card'}
+      </button>
+    </form>
+  );
+};
 
 const Payment = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
-  
 
-  const { event, ticketType, price } = state || {}; // Ensure state is defined
-  const [processPaymentMutation] = useProcessPaymentMutation();
+  const { event, ticketType, price } = state || {};
   const [ticketCount, setTicketCount] = useState(1);
-  
-  // Debug logging
-  console.log('Payment component state:', { event, ticketType, price });
-  console.log('Event object:', event);
-  
-  // Convert price to number with fallbacks for different property names
+  const [clientSecret, setClientSecret] = useState(null);
+  const [intentLoading, setIntentLoading] = useState(false);
+
   let actualPrice = price;
   if (!actualPrice && event) {
-    // Try different possible price property names
-    if (ticketType === 'VIP') {
-      actualPrice = event.viptickets || event.vipTicketPrice || event.vipPrice;
-    } else if (ticketType === 'Regular') {
-      actualPrice = event.regulartickets || event.regularTicketPrice || event.regularPrice;
-    }
+    if (ticketType === 'VIP') actualPrice = event.viptickets || event.vipTicketPrice || event.vipPrice;
+    else if (ticketType === 'Regular') actualPrice = event.regulartickets || event.regularTicketPrice || event.regularPrice;
   }
-  
   const numericPrice = parseFloat(actualPrice) || 0;
   const totalAmount = +Number(numericPrice * ticketCount).toFixed(2);
-  
-  console.log('Final price values:', { actualPrice, numericPrice, totalAmount });
 
-  // Define STRIPE_PUBLISHABLE_KEY here, outside the render for cleaner access
-  const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
-  'pk_test_51SIA4MBkenI78onID0gYnJjr2D4MjNcPKWKNBOF6sP53sOFcMHfHlKCfhxU2xy1faxAJjl4azon90tOQ0KOqWLZb00z4hn7vXY';
-  
-  
-
+  const fetchClientSecret = async () => {
+    if (intentLoading) return;
+    setIntentLoading(true);
+    setClientSecret(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_URL}/payments/create-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ totalAmount: Math.round(totalAmount * 100) }),
+      });
+      const data = await res.json();
+      if (!data.clientSecret) throw new Error(data.message || 'Failed to get payment intent');
+      setClientSecret(data.clientSecret);
+    } catch (err) {
+      alert(`Could not initialize payment: ${err.message}`);
+    }
+    setIntentLoading(false);
+  };
 
   const processPayment = (paymentMethod, stripeToken = null) => { // Added stripeToken parameter
     try {
@@ -75,7 +155,7 @@ const Payment = () => {
             ticketType,
             ticketCount,
             unitPrice: numericPrice * 100, // Use numericPrice instead of price
-            totalAmount: parseFloat(totalAmount) , // Parse totalAmount to ensure it's a number
+            totalAmount: Math.round(totalAmount * 100), // Convert to cents
             paymentMethod,
             paymentDate: new Date().toISOString(),
             status: 'completed',
@@ -108,7 +188,6 @@ const Payment = () => {
   const handlePayPal = () => processPayment('PayPal');
   const handleGooglePay = () => processPayment('Google Pay');
   const handleApplePay = () => processPayment('Apple Pay');
-  // const handleStripe = () => processPayment('Stripe'); // Not needed, StripeCheckout handles it
   const handleRazorpay = () => processPayment('Razorpay');
   const handlePhonePe = () => processPayment('PhonePe');
 
@@ -246,32 +325,19 @@ const Payment = () => {
                     <span className="font-bold">PhonePe</span>
                 </button>
 
-                {/* Stripe integration: Use StripeCheckout to render a single button that opens the popup */}
+                {/* Stripe Card Payment */}
                 <div className="col-span-2 border-2 border-purple-500 rounded-md p-4">
                   <h4 className="font-bold text-purple-500 mb-3">💳 Card Payment (Stripe)</h4>
-                  {/* Remove your manual card input fields here, as StripeCheckout handles the input via popup */}
-                  <StripeCheckout
-                      name={event?.title || 'Event Payment'} // Use optional chaining
-                      description={`Total amount for ${ticketCount } ${ticketType} ticket(s).`}
-                      amount={totalAmount * 100} // Stripe amount is in cents
-                      currency="USD" // Or your currency
-                      stripeKey={STRIPE_PUBLISHABLE_KEY} // Use the defined constant
-                      token={(token) => processPayment('Stripe', token)} // Pass token to your handler
-                      email={user?.email || 'guest@example.com'} // Use optional chaining
-                      shippingAddress={false}
-                      billingAddress={false}
-                  >
-                      <button
-                          className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
-                      >
-                          Pay with Card (Stripe Popup)
-                      </button>
-                  </StripeCheckout>
+                  <StripeCardForm
+                    clientSecret={clientSecret}
+                    intentLoading={intentLoading}
+                    fetchClientSecret={fetchClientSecret}
+                    event={event} ticketType={ticketType} ticketCount={ticketCount}
+                    numericPrice={numericPrice} totalAmount={totalAmount}
+                    user={user} navigate={navigate}
+                  />
                   <div className="flex gap-2 text-sm text-gray-600 mt-2">
-                    <span>💳 Visa</span>
-                    <span>💳 Mastercard</span>
-                    <span>💳 Amex</span>
-                    <span>💳 Discover</span>
+                    <span>💳 Visa</span><span>💳 Mastercard</span><span>💳 Amex</span><span>💳 Discover</span>
                   </div>
                 </div>
               </div>
