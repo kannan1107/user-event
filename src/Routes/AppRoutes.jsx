@@ -40,7 +40,7 @@ const AppRoutes = () => {
     <>
       <Navbar/>
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Login/>} />
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register/>} />
         <Route path="/home" element={<ProtectedRoute><Home/></ProtectedRoute>} />
