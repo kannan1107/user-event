@@ -13,7 +13,7 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  if (['/login', '/register'].includes(location.pathname)) return null;
+  if (['/register'].includes(location.pathname)) return null;
 
   return (
     <nav className="bg-blue-600 text-white p-3">
