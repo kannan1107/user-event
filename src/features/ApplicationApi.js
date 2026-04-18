@@ -8,7 +8,15 @@ export const appApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
+      const state = getState();
+      // Robust token retrieval: check direct token, then nested in user, then localStorage
+      // Stripping any extra quotes that might come from localStorage
+      const rawToken = state.auth?.token || 
+                    state.auth?.user?.token || 
+                    localStorage.getItem('token');
+      
+      const token = rawToken?.replace(/"/g, "");
+
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -33,12 +41,6 @@ export const appApi = createApi({
       transformErrorResponse: (response, meta, arg) => {
         console.log("Login API Error:", response);
         return response;
-      },
-      prepareHeaders: (headers, { getState }) => {
-        const token = getState().auth?.token;
-        if (token) {
-          headers.set("Authorization", `Bearer ${token}`);
-        }
       },
     }),
     fetchUser: builder.query({
@@ -149,6 +151,15 @@ export const appApi = createApi({
       providesTags: ["Event"],
     }),
 
+    rateEvent: builder.mutation({
+      query: ({ id, rating, review }) => ({
+        url: `/events/${id}/rating`,
+        method: "POST",
+        body: { rating, review },
+      }),
+      invalidatesTags: ["Event"],
+    }),
+
     createEvent: builder.mutation({
       query: (payload) => {
         console.log("Creating event with payload:", payload);
@@ -158,44 +169,20 @@ export const appApi = createApi({
           body: payload,
         };
       },
+      invalidatesTags: ["Event"],
       transformErrorResponse: (response, meta, arg) => {
         console.log("API Error Response:", response);
         return response;
       },
     }),
     updateEvent: builder.mutation({
-      queryFn: async ({ id, payload }, api, extraOptions, baseQuery) => {
-        console.log("Updating event with ID:", id, "Payload:", payload);
-
-        try {
-          const result = await baseQuery({
-            url: `/events/${id}`,
-            method: "PUT",
-            body: payload,
-          });
-
-          if (result.data) {
-            return result;
-          }
-
-          // Fallback to mock if API fails
-          return {
-            data: {
-              success: true,
-              message: "Event updated successfully",
-              event: payload,
-            },
-          };
-        } catch (error) {
-          // Return mock success on any error
-          return {
-            data: {
-              success: true,
-              message: "Event updated successfully",
-              event: payload,
-            },
-          };
-        }
+      query: ({ id, payload }) => {
+        const eventId = id || payload?._id || payload?.id;
+        return {
+          url: `/events/${eventId}`,
+          method: "PUT",
+          body: payload,
+        };
       },
       invalidatesTags: ["Event"],
     }),
@@ -224,14 +211,14 @@ export const appApi = createApi({
     }),
     payment: builder.mutation({
       query: ({ id, payload }) => ({
-        url: "/payment", // Changed to include /api
+        url: "/payment",
         method: "POST",
         body: payload,
       }),
     }),
     cancelEvent: builder.mutation({
       query: (id) => ({
-        url: `/cancel-ticket/:id`,
+        url: `/cancel-ticket/${id}`,
         method: "POST",
       }),
     }),
@@ -239,7 +226,7 @@ export const appApi = createApi({
       query: ({ id, paymentData }) => {
         console.log("Processing payment for event:", id, paymentData);
         return {
-          url: `payment`, // <-- Corrected URL
+          url: "/payment",
           method: "POST",
           body: paymentData,
         };
@@ -262,4 +249,5 @@ export const {
   useFetchTicketQuery,
   useFetchAllTicketsQuery,
   useCancelTicketMutation,
+  useRateEventMutation,
 } = appApi;
