@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useRateEventMutation } from '../../features/ApplicationApi';
 
 const EventDetails = () => {
   const location = useLocation();
@@ -7,6 +9,28 @@ const EventDetails = () => {
   const user = useSelector((state) => state.auth.user);
   const event = location.state?.event;
   const imageBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:5000/uploads/';
+
+  const [hovered, setHovered] = useState(0);
+  const [selected, setSelected] = useState(0);
+  const [review, setReview] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [rateEvent, { isLoading: rating }] = useRateEventMutation();
+
+  const userRating = event?.ratings?.find((r) => r.userId === user?._id || r.userId === user?.id);
+
+  const avgRating = event?.ratings?.length
+    ? (event.ratings.reduce((a, r) => a + r.rating, 0) / event.ratings.length).toFixed(1)
+    : 0;
+
+  const handleRatingSubmit = async () => {
+    if (!selected) return;
+    try {
+      await rateEvent({ id: event._id, rating: selected, review }).unwrap();
+      setSubmitted(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   console.log('Event data:', event);
   console.log('Guests:', event?.guests);
@@ -101,12 +125,12 @@ const EventDetails = () => {
               <div className="bg-yellow-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">VIP Seats</p>
                 <p className="text-2xl font-bold text-yellow-600">{event.vipSeats}</p>
-                <p className="text-lg font-semibold">${event.viptickets}</p>
+                <p className="text-lg font-semibold">${event.vipTicketPrice}</p>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">Regular Seats</p>
                 <p className="text-2xl font-bold text-blue-600">{event.regularSeats}</p>
-                <p className="text-lg font-semibold">${event.regulartickets}</p>
+                <p className="text-lg font-semibold">${event.regularTicketPrice}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">Total Seats</p>
@@ -143,25 +167,83 @@ const EventDetails = () => {
               {event.vipSeats > 0 && (
                 <button 
                   onClick={() => navigate('/payment', { 
-                    state: { event, ticketType: 'VIP', price: event.viptickets }
+                    state: { event, ticketType: 'VIP', price: event.vipTicketPrice }
                   })}
                   className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-8 py-3 rounded-full font-bold hover:shadow-lg"
                 >
-                  Book VIP Ticket - ${event.viptickets}
+                  Book VIP Ticket - ${event.vipTicketPrice}
                 </button>
               )}
               {event.regularSeats > 0 && (
                 <button 
                   onClick={() => navigate('/payment', { 
-                    state: { event, ticketType: 'Regular', price: event.regulartickets }
+                    state: { event, ticketType: 'Regular', price: event.regularTicketPrice }
                   })}
                   className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-8 py-3 rounded-full font-bold hover:shadow-lg"
                 >
-                  Book Regular Ticket - ${event.regulartickets}
+                  Book Regular Ticket - ${event.regularTicketPrice}
                 </button>
               )}
             </div>
           )}
+
+          {/* Rating Display */}
+          <div className="border-t pt-6 mb-6">
+            <h2 className="text-2xl font-bold mb-3">Event Rating</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex">
+                {[1,2,3,4,5].map((star) => (
+                  <svg key={star} className={`w-7 h-7 ${star <= Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                ))}
+              </div>
+              <span className="text-xl font-bold text-yellow-500">{avgRating}</span>
+              <span className="text-gray-500 text-sm">({event?.ratings?.length || 0} reviews)</span>
+            </div>
+
+            {/* Submit Rating - only for logged-in non-admin users */}
+            {user && user.role !== 'admin' && (
+              submitted || userRating ? (
+                <p className="text-green-600 font-semibold">✓ You rated this event {userRating?.rating || selected} ★</p>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="font-semibold mb-2">Rate this event:</p>
+                  <div className="flex gap-1 mb-3">
+                    {[1,2,3,4,5].map((star) => (
+                      <svg
+                        key={star}
+                        className={`w-9 h-9 cursor-pointer transition-colors ${
+                          star <= (hovered || selected) ? 'text-yellow-400' : 'text-gray-300'
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        onMouseEnter={() => setHovered(star)}
+                        onMouseLeave={() => setHovered(0)}
+                        onClick={() => setSelected(star)}
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    ))}
+                  </div>
+                  <textarea
+                    className="w-full border rounded p-2 text-sm mb-3"
+                    rows={2}
+                    placeholder="Write a review (optional)"
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                  />
+                  <button
+                    onClick={handleRatingSubmit}
+                    disabled={!selected || rating}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2 rounded-full disabled:opacity-50"
+                  >
+                    {rating ? 'Submitting...' : 'Submit Rating'}
+                  </button>
+                </div>
+              )
+            )}
+          </div>
 
           <button 
             onClick={() => navigate('/home')}
