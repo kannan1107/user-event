@@ -12,6 +12,7 @@ import UserDetails from '../pages/auth/userDetails';
 import Ticket from "../pages/auth/Ticket";
 import EventDetails from "../pages/auth/eventDetails";
 import Analytics from "../pages/auth/Analytics";
+import { Roles } from "../constants/Roles";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -22,14 +23,17 @@ const ProtectedRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== "admin") return <Navigate to="/home" />;
+  if (user.role !== Roles.ADMIN) return <Navigate to="/home" />;
   return children;
 };
 
 const OrganizerRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
+
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== "organizer" && user.role !== "admin") return <Navigate to="/home" />;
+  // Allow both organizers and admins to access organizer routes
+  if (user.role !== Roles.ORGANIZER && user.role !== Roles.ADMIN) return <Navigate to="/home" />;
+
   return children;
 };
 
@@ -48,11 +52,14 @@ const AppRoutes = () => {
         <Route path="/createEvent" element={<OrganizerRoute><CreateEvent/></OrganizerRoute>} />
         <Route path="/updateEvent" element={<OrganizerRoute><UpdateEvent/></OrganizerRoute>} />
         <Route path="/ticket" element={<ProtectedRoute><Ticket/></ProtectedRoute>} />
+        {/* Consolidated Analytics routes */}
+        <Route path="/analytics" element={<ProtectedRoute><Analytics/></ProtectedRoute>} />
+        <Route path="/chart" element={<ProtectedRoute><Analytics/></ProtectedRoute>} />
+        <Route path="/analize" element={<Navigate to="/analytics" />} />
         <Route path="/eventDetails" element={<ProtectedRoute><EventDetails/></ProtectedRoute>} />
 
         <Route path="/userDetails" element={<AdminRoute><UserDetails /></AdminRoute>} /> 
         <Route path="/payment" element={<ProtectedRoute><Payment/></ProtectedRoute>} />
-        <Route path="/chart" element={<ProtectedRoute><Analytics/></ProtectedRoute>} />
       </Routes>
     </>
   )
