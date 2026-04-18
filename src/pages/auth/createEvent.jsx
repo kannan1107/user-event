@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useCreateEventMutation } from "../../features/ApplicationApi";
 import Loading from "../../components/Loading";
+import { Roles } from "../../constants/Roles";
 
 const CreateEvent = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
 
   const defaultState = {
     title: "",
@@ -25,6 +26,15 @@ const CreateEvent = () => {
 
   const [data, setData] = useState({ ...defaultState });
   const [createEventMutation, { isLoading }] = useCreateEventMutation();
+
+  useEffect(() => {
+    if (user?.role === Roles.ORGANIZER || user?.role === Roles.ADMIN) {
+      setData((prev) => ({
+        ...prev,
+        organizer: user.name,
+      }));
+    }
+  }, [user]);
 
   const handleChange = (event) => {
     if (
@@ -68,8 +78,13 @@ const CreateEvent = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!isAuthenticated) {
+    if (!token) {
       alert("Please login first to create events");
+      return;
+    }
+
+    if (user?.role !== Roles.ADMIN && user?.role !== Roles.ORGANIZER) {
+      alert("Error: You do not have the required permissions to create events.");
       return;
     }
 
@@ -87,7 +102,6 @@ const CreateEvent = () => {
     formData.append("totalSeats", data.totalSeats);
     formData.append("vipSeats", data.vipSeats);
     formData.append("regularSeats", data.regularSeats);
-    formData.append("guests", JSON.stringify(validGuests));
 
     if (data.image) {
       formData.append("image", data.image);
@@ -166,8 +180,8 @@ const CreateEvent = () => {
                 name="organizer"
                 id="organizer"
                 value={data.organizer}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                readOnly
+                className="w-full p-3 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed focus:outline-none"
               />
             </div>
             <div>
