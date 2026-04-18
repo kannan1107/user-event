@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Roles } from "../../constants/Roles";
 import {
   useDeleteUserMutation,
   useFetchUserQuery,
@@ -216,7 +217,15 @@ const UserDetails = () => { // Renamed for conventional naming
             <input name="email" value={formData.email} onChange={handleChange} className="w-full mb-3 border p-2 rounded" />
 
             <label className="block mb-2 text-sm">Role</label>
-            <input name="role" value={formData.role} onChange={handleChange} className="w-full mb-3 border p-2 rounded" />
+            <select 
+              name="role" 
+              value={formData.role} 
+              onChange={handleChange} 
+              className="w-full mb-3 border p-2 rounded">
+              <option value={Roles.USER}>User</option>
+              <option value={Roles.ADMIN}>Admin</option>
+              <option value={Roles.ORGANIZER}>Organizer</option>
+            </select>
 
             <label className="block mb-2 text-sm">Phone</label>
             <input name="phone" value={formData.phone} onChange={handleChange} className="w-full mb-3 border p-2 rounded" />
