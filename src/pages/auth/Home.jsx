@@ -1,9 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useState, useEffect, useRef } from 'react';
 import { useFetchEventsQuery, useDeleteEventMutation } from "../../features/ApplicationApi";
 import Loading from '../../components/Loading';
 import EventFilter from '../../components/EventFilter';
 import { useNavigate } from 'react-router-dom';
+import { Roles } from "../../constants/Roles";
 // import multer from 'multer';
 
 
@@ -23,7 +24,31 @@ const Home = () => {
     
     const eventList = events?.data || [];
 
-    
+    // Events more than 30 days away
+    const now = new Date();
+    const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const upcomingEvents = eventList
+        .filter(e => new Date(e.date) > in30Days)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const [slideIndex, setSlideIndex] = useState(0);
+    const [visible, setVisible] = useState(true);
+    const slideTimer = useRef(null);
+
+    useEffect(() => {
+        if (upcomingEvents.length <= 1) return;
+        slideTimer.current = setInterval(() => {
+            setVisible(false);
+            setTimeout(() => {
+                setSlideIndex(prev => (prev + 1) % upcomingEvents.length);
+                setVisible(true);
+            }, 400);
+        }, 4000);
+        return () => clearInterval(slideTimer.current);
+    }, [upcomingEvents.length]);
+
+    const getDaysLeft = (date) => Math.ceil((new Date(date) - now) / (1000 * 60 * 60 * 24));
+
     // Sort events: future events first, then by date
     const sortEvents = (events) => {
         return [...events].sort((a, b) => {
@@ -84,8 +109,58 @@ const Home = () => {
     return (
         <div className="p-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
+
+            {/* Upcoming Events Slide Notification */}
+            {upcomingEvents.length > 0 && (
+                <div className="mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-2 bg-black/20">
+                        <span className="animate-pulse w-2 h-2 rounded-full bg-yellow-400"></span>
+                        <span className="text-white text-sm font-semibold tracking-widest uppercase">Upcoming Events — More than 30 days away</span>
+                        <span className="ml-auto text-white/70 text-xs">{slideIndex + 1} / {upcomingEvents.length}</span>
+                    </div>
+
+                    <div
+                        className="flex items-center gap-5 px-6 py-4 cursor-pointer"
+                        style={{ transition: 'opacity 0.4s', opacity: visible ? 1 : 0 }}
+                        onClick={() => navigate('/eventDetails', { state: { event: upcomingEvents[slideIndex] } })}
+                    >
+                        {upcomingEvents[slideIndex]?.image && (
+                            <img
+                                src={upcomingEvents[slideIndex].image.startsWith('http') ? upcomingEvents[slideIndex].image : `${imageBaseUrl}${upcomingEvents[slideIndex].image}`}
+                                alt={upcomingEvents[slideIndex].title}
+                                className="w-20 h-20 rounded-xl object-cover flex-shrink-0 border-2 border-white/40"
+                            />
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-white text-xl font-bold truncate">{upcomingEvents[slideIndex]?.title}</h3>
+                            <p className="text-white/80 text-sm truncate">{upcomingEvents[slideIndex]?.location} &bull; {upcomingEvents[slideIndex]?.category}</p>
+                            <p className="text-white/70 text-sm mt-1">
+                                {new Date(upcomingEvents[slideIndex]?.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                        </div>
+                        <div className="flex-shrink-0 text-center bg-white/20 rounded-xl px-5 py-3">
+                            <div className="text-4xl font-extrabold text-yellow-300">{getDaysLeft(upcomingEvents[slideIndex]?.date)}</div>
+                            <div className="text-white/80 text-xs font-semibold uppercase tracking-wide">Days Left</div>
+                        </div>
+                    </div>
+
+                    {/* Dot indicators */}
+                    {upcomingEvents.length > 1 && (
+                        <div className="flex justify-center gap-2 pb-3">
+                            {upcomingEvents.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => { setVisible(false); setTimeout(() => { setSlideIndex(i); setVisible(true); }, 400); }}
+                                    className={`w-2 h-2 rounded-full transition-all ${ i === slideIndex ? 'bg-yellow-300 w-5' : 'bg-white/40' }`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             <EventFilter events={eventList} onFilterChange={setFilteredEvents} />
-            {(user?.role === "admin" || user?.role === "organizer") && (
+            {(user?.role === Roles.ADMIN || user?.role === Roles.ORGANIZER) && (
                 <div className="mb-6 flex justify-end">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate('/createEvent')}>
                         Create Event
@@ -96,7 +171,7 @@ const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {currentEvents.map((event) => (
                         <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-4 shadow relative cursor-pointer hover:shadow-xl transition" onClick={() => navigate('/eventDetails', { state: { event } })}>
-                            {(user?.role === "admin" || user?.role === "organizer") && (
+                            {(user?.role === Roles.ADMIN || user?.role === Roles.ORGANIZER) && (
                                 <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
                                     <div className="relative group">
                                         <button className="p-1 hover:bg-gray-100 rounded">
