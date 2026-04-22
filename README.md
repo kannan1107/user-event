@@ -1,8 +1,14 @@
 # Event Management
 
-## Login Details
+##  Admin Login Details
 - email - kannan11071985@gmail.com
 - password - kannan11
+
+  ##  organizer Login Details
+  - Login the admin user select the new user manu then create organizer user
+ 
+   ##  normal user Login Details
+  - Without login the and select the register  manu  the create the normal user
 
 ## Table of Contents
 - [About The Project](#about-the-project)
@@ -38,7 +44,9 @@ This platform allows users to:
 Admins can manage:
 - Events
 - Users
-- Bookings
+- update and delete
+- analize event page
+  
 
 ---
 
@@ -61,6 +69,7 @@ Admins can manage:
 - **Admin Dashboard (Restricted)**
   - User management
   - Event CRUD operations
+  - analize  events, tickets booking and users
 
 - **Email Notifications**
   - Welcome emails
@@ -95,6 +104,7 @@ Admins can manage:
 - Stripe
 - Dotenv
 - CORS
+  
 
 ### Database
 - MongoDB (Local or MongoDB Atlas)
