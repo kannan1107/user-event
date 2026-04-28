@@ -78,7 +78,13 @@ const Register = () => {
                     className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200 disabled:opacity-50"
                 >
                     {isLoading ? 'Registering...' : 'Register'}
-                    
+                </button>
+                <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="w-full mt-3 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-200"
+                >
+                    Back to Login
                 </button>
             </form>
         </div>
