@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../features/ApplicationApi';
 
 const Register = () => {
+    const navigate = useNavigate();
     const [registerMutation, { isLoading }] = useRegisterMutation();
     const [formData, setFormData] = useState({
         name: '',
@@ -22,6 +24,7 @@ const Register = () => {
             .then(() => {
                 alert('User registered successfully!');
                 setFormData({ name: '', email: '', password: '', role: 'user' });
+                navigate('/login');
             })
             .catch((error) => {
                 console.error('Registration failed:', error);
@@ -75,6 +78,7 @@ const Register = () => {
                     className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200 disabled:opacity-50"
                 >
                     {isLoading ? 'Registering...' : 'Register'}
+                    
                 </button>
             </form>
         </div>
