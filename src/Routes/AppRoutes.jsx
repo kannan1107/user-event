@@ -1,6 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Home from "../pages/auth/Home";
@@ -61,6 +62,7 @@ const AppRoutes = () => {
         <Route path="/userDetails" element={<AdminRoute><UserDetails /></AdminRoute>} /> 
         <Route path="/payment" element={<ProtectedRoute><Payment/></ProtectedRoute>} />
       </Routes>
+      <Footer />
     </>
   )
 }
