@@ -65,58 +65,71 @@ const Login = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 relative" style={{ backgroundImage: "url('/event.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md relative z-10">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.2),transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),transparent_20%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[url('/event.png')] bg-cover bg-center opacity-10"></div>
+      <div className="relative z-10 w-full max-w-md px-8 py-10 rounded-[32px] border border-white/10 bg-slate-900/85 shadow-2xl backdrop-blur-xl">
+        <div className="text-center mb-8">
+          <p className="text-sm text-blue-300 uppercase tracking-[0.3em] mb-2">Event Management</p>
+          <h2 className="text-3xl font-semibold">Welcome back</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Sign in to manage events, tickets and attendees from a single dashboard.
+          </p>
+        </div>
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block mb-1">Email</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
             <input
               type="email"
               name="email"
               value={data.email}
               onChange={handleChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               placeholder="Enter your email"
             />
           </div>
+
           <div>
-            <label className="block mb-1">Password</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
             <input
               type="password"
               name="password"
               value={data.password}
               onChange={handleChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               placeholder="Enter your password"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <label className="flex items-center">
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <label className="flex items-center gap-2 text-sm text-slate-300">
               <input
                 type="checkbox"
                 checked={remember}
                 onChange={handleRemember}
-                className="mr-2"
+                className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-blue-500 focus:ring-blue-500"
               />
-              <span className="text-sm">Remember me</span>
+              Remember me
             </label>
+
             <button
               type="button"
               onClick={handleForgotPassword}
-              className="text-blue-600 text-sm hover:underline"
+              className="text-sm text-blue-300 hover:text-blue-100"
             >
               Forgot password?
             </button>
           </div>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+
+          {error && <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700"
+            className="w-full rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-3 text-base font-medium text-white shadow-lg shadow-slate-950/20 transition hover:from-blue-400 hover:to-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
