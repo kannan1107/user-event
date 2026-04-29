@@ -170,7 +170,7 @@ const Home = () => {
             {currentEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {currentEvents.map((event) => (
-                        <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-4 shadow relative cursor-pointer hover:shadow-xl transition" onClick={() => navigate('/eventDetails', { state: { event } })}>
+                        <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-8 shadow relative cursor-pointer hover:shadow-xl transition" onClick={() => navigate('/eventDetails', { state: { event } })}>
                             {(user?.role === Roles.ADMIN || user?.role === Roles.ORGANIZER) && (
                                 <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
                                     <div className="relative group">
@@ -179,7 +179,7 @@ const Home = () => {
                                                 <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                                             </svg>
                                         </button>
-                                        <div className="absolute right-0 top-8 bg-white border rounded shadow-lg hidden group-hover:block z-10">
+                                        <div className="absolute right-0 top-8 bg-red-400 border rounded shadow-lg hidden group-hover:block z-10">
                                             <button 
                                                 className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
                                                 onClick={() => navigate('/updateEvent', { state: { event } })}
