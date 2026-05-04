@@ -136,8 +136,8 @@ export const appApi = createApi({
     }),
 
     cancelTicket: builder.mutation({
-      query: (id) => ({
-        url: `/payments/${id}`,
+      query: ({ id, cancelCount }) => ({
+        url: `/payments/${id}?cancelCount=${cancelCount}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Ticket", "Event"],
