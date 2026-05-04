@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUpdateEventMutation } from "../../features/ApplicationApi";
 import Loading from "../../components/Loading";
@@ -82,7 +83,7 @@ const UpdateEvent = () => {
     console.log('Update data:', updateData);
     
     if (!eventId || eventId === 'id') {
-      alert('Event updated successfully!');
+      toast.success('Event updated successfully!');
       navigate('/');
       return;
     }
@@ -91,7 +92,7 @@ const UpdateEvent = () => {
       .unwrap()
       .then((res) => {
         console.log('Event updated successfully:', res);
-        alert('Event updated successfully!');
+        toast.success('Event updated successfully!');
         navigate('/');
       })
       .catch((error) => {
@@ -99,10 +100,10 @@ const UpdateEvent = () => {
         console.error("Error details:", error.status, error.data);
         // Handle server errors gracefully
         if (error.status === 500) {
-          alert('Event updated successfully!');
+          toast.success('Event updated successfully!');
           navigate('/');
         } else {
-          alert(`Update failed: ${error.status || 'Unknown error'}. Check console for details.`);
+          toast.error(`Update failed: ${error.status || 'Unknown error'}. Check console for details.`);
         }
       });
   };
