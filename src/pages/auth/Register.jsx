@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../features/ApplicationApi';
 
@@ -22,13 +23,13 @@ const Register = () => {
         registerMutation(formData)
             .unwrap()
             .then(() => {
-                alert('User registered successfully!');
+                toast.success('User registered successfully!');
                 setFormData({ name: '', email: '', password: '', role: 'user' });
                 navigate('/login');
             })
             .catch((error) => {
                 console.error('Registration failed:', error);
-                alert('Registration failed. Please try again.');
+                toast.error('Registration failed. Please try again.');
             });
     };
 
