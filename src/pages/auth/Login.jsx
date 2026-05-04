@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../features/ApplicationApi";
 import { createUser } from "../../store/authSlice";
@@ -32,17 +33,25 @@ const Login = () => {
     try {
       const res = await Login(data).unwrap();
       console.log('Login response:', res);
-      
-      if (res) {
-        dispatch(createUser(res));
-        setData({ email: "", password: "" });
-        setError('');
-      } else {
-        throw new Error('No response from server');
+
+      const token =
+        res?.token ||
+        res?.accessToken ||
+        res?.data?.token ||
+        res?.data?.accessToken;
+      const userInfo = res?.user || res?.data?.user || res?.data || res;
+
+      if (!token) {
+        throw new Error('Login response did not include token');
       }
+
+      localStorage.setItem('token', token);
+      dispatch(createUser({ user: userInfo, token }));
+      setData({ email: "", password: "" });
+      setError('');
     } catch (error) {
       console.log('Login error:', error);
-      alert('Invalid email or password');
+      toast.error('Invalid email or password');
       setError('Invalid email or password');
     }
   };
