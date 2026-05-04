@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { useCreateEventMutation } from "../../features/ApplicationApi";
 import Loading from "../../components/Loading";
 import { Roles } from "../../constants/Roles";
@@ -79,12 +80,12 @@ const CreateEvent = () => {
     event.preventDefault();
 
     if (!token) {
-      alert("Please login first to create events");
+      toast.error("Please login first to create events");
       return;
     }
 
     if (user?.role !== Roles.ADMIN && user?.role !== Roles.ORGANIZER) {
-      alert("Error: You do not have the required permissions to create events.");
+      toast.error("Error: You do not have the required permissions to create events.");
       return;
     }
 
@@ -129,14 +130,14 @@ const CreateEvent = () => {
         if (videoInput) videoInput.value = "";
         
         console.log("Event created:", res);
-        alert("Event created successfully!");
+        toast.success("Event created successfully!");
       })
       .catch((error) => {
         console.error("Failed to create event:", error);
         console.error("Error details:", error?.data);
         const errorMsg =
           error?.data?.message || error?.data?.error || error?.message || "Unknown error";
-        alert(`Failed to create event: ${errorMsg}`);
+        toast.error(`Failed to create event: ${errorMsg}`);
       });
   };
 
