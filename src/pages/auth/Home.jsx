@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
 import { useFetchEventsQuery, useDeleteEventMutation } from "../../features/ApplicationApi";
 import Loading from '../../components/Loading';
 import EventFilter from '../../components/EventFilter';
@@ -84,10 +85,10 @@ const Home = () => {
             deleteEventMutation(eventId)
                 .unwrap()
                 .then(() => {
-                    alert('Event deleted successfully!');
+                    toast.success('Event deleted successfully!');
                 })
                 .catch(() => {
-                    alert('Event deleted successfully!');
+                    toast.error('Failed to delete event.');
                 });
         }
     };
@@ -107,8 +108,106 @@ const Home = () => {
 
      
     return (
-        <div className="p-6">
-            <h1 className="text-3xl font-bold mb-6 text-center">Welcome To EventS</h1>
+        <div className="p-6 relative overflow-hidden" style={{ background: 'linear-gradient(to bottom, #0a0a1a, #0d0d2b, #0a0a1a)', minHeight: '100vh' }}>
+            {/* Night Celebrating Theme */}
+            <style>{`
+                @keyframes twinkle {
+                    0%, 100% { opacity: 0.2; transform: scale(1); }
+                    50% { opacity: 1; transform: scale(1.6); }
+                }
+                @keyframes shoot {
+                    0% { transform: translateX(0) translateY(0) rotate(-35deg); opacity: 1; width: 0px; }
+                    100% { transform: translateX(600px) translateY(300px) rotate(-35deg); opacity: 0; width: 180px; }
+                }
+                @keyframes firework {
+                    0% { transform: translateY(0) scale(1); opacity: 1; }
+                    60% { opacity: 1; }
+                    100% { transform: translateY(-120px) scale(0); opacity: 0; }
+                }
+                @keyframes burst {
+                    0% { transform: translate(0,0) scale(1); opacity: 1; }
+                    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-12px); }
+                }
+                @keyframes confettiFall {
+                    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                }
+                @keyframes moonGlow {
+                    0%, 100% { box-shadow: 0 0 30px 10px rgba(253,224,71,0.3); }
+                    50% { box-shadow: 0 0 60px 20px rgba(253,224,71,0.6); }
+                }
+            `}</style>
+
+            {/* Moon */}
+            <div className="fixed pointer-events-none" style={{ top: '40px', right: '80px', zIndex: 0 }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #fef9c3, #fde047)', animation: 'moonGlow 4s ease-in-out infinite' }} />
+                <div style={{ position: 'absolute', top: '8px', left: '12px', width: '14px', height: '14px', borderRadius: '50%', background: 'rgba(0,0,0,0.12)' }} />
+                <div style={{ position: 'absolute', top: '28px', left: '30px', width: '9px', height: '9px', borderRadius: '50%', background: 'rgba(0,0,0,0.1)' }} />
+            </div>
+
+            {/* Twinkling stars */}
+            {[...Array(100)].map((_, i) => (
+                <div key={`st${i}`} className="fixed rounded-full pointer-events-none"
+                    style={{
+                        width: `${Math.random() * 3 + 1}px`, height: `${Math.random() * 3 + 1}px`,
+                        top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
+                        background: ['#fff','#fde047','#a78bfa','#60a5fa','#f9a8d4'][i % 5],
+                        animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
+                        animationDelay: `${Math.random() * 5}s`, zIndex: 0,
+                    }}
+                />
+            ))}
+
+            {/* Shooting stars */}
+            {[...Array(8)].map((_, i) => (
+                <div key={`sh${i}`} className="fixed pointer-events-none"
+                    style={{
+                        top: `${5 + i * 10}%`, left: `${Math.random() * 30}%`,
+                        height: '2px', width: '0px',
+                        background: `linear-gradient(to right, transparent, ${ ['#fff','#fde047','#a78bfa','#f472b6'][i % 4] })`,
+                        borderRadius: '9999px',
+                        animation: `shoot ${Math.random() * 3 + 4}s linear infinite`,
+                        animationDelay: `${i * 2.5}s`, zIndex: 0,
+                    }}
+                />
+            ))}
+
+            {/* Fireworks bursts */}
+            {[...Array(6)].map((_, fi) => (
+                <div key={`fw${fi}`} className="fixed pointer-events-none" style={{ top: `${10 + fi * 14}%`, left: `${10 + fi * 15}%`, zIndex: 0 }}>
+                    {[...Array(10)].map((_, pi) => (
+                        <div key={pi} className="absolute rounded-full"
+                            style={{
+                                width: '5px', height: '5px',
+                                background: ['#f472b6','#facc15','#a78bfa','#34d399','#60a5fa','#fb923c'][fi % 6],
+                                '--tx': `${Math.cos((pi / 10) * 2 * Math.PI) * 50}px`,
+                                '--ty': `${Math.sin((pi / 10) * 2 * Math.PI) * 50}px`,
+                                animation: `burst 1.8s ease-out infinite`,
+                                animationDelay: `${fi * 1.2 + pi * 0.05}s`,
+                            }}
+                        />
+                    ))}
+                </div>
+            ))}
+
+            {/* Confetti */}
+            {[...Array(30)].map((_, i) => (
+                <div key={`cf${i}`} className="fixed pointer-events-none"
+                    style={{
+                        top: '-20px', left: `${Math.random() * 100}%`,
+                        width: `${Math.random() * 8 + 4}px`, height: `${Math.random() * 8 + 4}px`,
+                        background: ['#f472b6','#facc15','#a78bfa','#34d399','#60a5fa','#fb923c'][i % 6],
+                        borderRadius: i % 3 === 0 ? '50%' : '2px',
+                        animation: `confettiFall ${Math.random() * 5 + 5}s linear infinite`,
+                        animationDelay: `${Math.random() * 6}s`, zIndex: 0,
+                    }}
+                />
+            ))}
+            <h1 className="text-3xl font-bold mb-6 text-center relative" style={{ zIndex: 1, background: 'linear-gradient(to right, #facc15, #a78bfa, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🎉 Welcome To EventS 🎉</h1>
 
             {/* Upcoming Events Slide Notification */}
             {upcomingEvents.length > 0 && (
@@ -170,7 +269,7 @@ const Home = () => {
             {currentEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {currentEvents.map((event) => (
-                        <div key={event._id || event.id} className="border border-gray-100 rounded-lg p-8 shadow relative cursor-pointer hover:shadow-xl transition" onClick={() => navigate('/eventDetails', { state: { event } })}>
+                        <div key={event._id || event.id} className="border border-purple-800/40 rounded-lg p-8 shadow relative cursor-pointer hover:shadow-xl transition" style={{ background: 'rgba(15,15,40,0.85)', backdropFilter: 'blur(8px)' }} onClick={() => navigate('/eventDetails', { state: { event } })}>
                             {(user?.role === Roles.ADMIN || user?.role === Roles.ORGANIZER) && (
                                 <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
                                     <div className="relative group">
@@ -220,12 +319,12 @@ const Home = () => {
                                     </div>
                                 </div>
                             )}
-                            <h3 className=" mb-2 text-center text-xl font-bold">{event.title || event.name}</h3>
-                            <p className="text-gray-700 mb-2 pb-2 border-b border-gray-200">{event.description || event.details}</p>
+                            <h3 className="mb-2 text-center text-xl font-bold text-white">{event.title || event.name}</h3>
+                            <p className="text-gray-400 mb-2 pb-2 border-b border-purple-800/40">{event.description || event.details}</p>
 
                             <div className='grid grid-cols-2'>
-                            <p className="text-gray-600 mb-2 ">Category: {event.category || event.type}</p>
-                            <p className="text-gray-600 flex items-center gap-2">
+                            <p className="text-gray-400 mb-2 ">Category: {event.category || event.type}</p>
+                            <p className="text-gray-400 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                 </svg>
@@ -233,7 +332,7 @@ const Home = () => {
                             </p>
                           
                             <p className={`flex items-center gap-2 ${
-                                new Date(event.date) < new Date() ? 'text-red-600' : 'text-gray-600'
+                                new Date(event.date) < new Date() ? 'text-red-400' : 'text-gray-400'
                             }`}>
                                 <svg className={`w-5 h-5 ${
                                     new Date(event.date) < new Date() ? 'text-red-500' : 'text-blue-500'
@@ -254,7 +353,7 @@ const Home = () => {
                                 )}
                             </p>
                             
-                             <p className="text-gray-600 flex items-center gap-2">
+                             <p className="text-gray-400 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M4 18v3h3v-3h10v3h3v-3h1c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h1zm0-8h16v6H4v-6z"/>
                                 </svg>
@@ -262,14 +361,14 @@ const Home = () => {
                             </p>
                           
 
-                            <p className="text-gray-600 flex items-center gap-2">
+                            <p className="text-gray-400 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm2.7-2h8.6l.9-5.4-2.1 1.8L12 8l-3.1 2.4-2.1-1.8L7.7 14z"/>
                                 </svg>
                                 {event.vipSeats} VIP Seats
                             </p>
 
-                            <p className="text-gray-600 flex items-center gap-2">
+                            <p className="text-gray-400 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V6H1v15h2v-3h18v3h2V10c0-1.66-1.34-3-3-3z"/>
                                 </svg>
@@ -374,7 +473,7 @@ const Home = () => {
                     ))}
                 </div>
             ) : (
-                <div className="text-center text-gray-500">No events available</div>
+                <div className="text-center text-gray-400">No events available</div>
             )}
             
             {totalPages > 1 && (
@@ -382,7 +481,7 @@ const Home = () => {
                     <button 
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                        className="px-3 py-1 bg-purple-900/50 text-white rounded disabled:opacity-50"
                     >
                         Previous
                     </button>
@@ -393,8 +492,8 @@ const Home = () => {
                             onClick={() => setCurrentPage(index + 1)}
                             className={`px-3 py-1 rounded ${
                                 currentPage === index + 1 
-                                    ? 'bg-blue-500 text-white' 
-                                    : 'bg-gray-200'
+                                    ? 'bg-purple-600 text-white' 
+                                    : 'bg-purple-900/50 text-white'
                             }`}
                         >
                             {index + 1}
@@ -404,7 +503,7 @@ const Home = () => {
                     <button 
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                        className="px-3 py-1 bg-purple-900/50 text-white rounded disabled:opacity-50"
                     >
                         Next
                     </button>
