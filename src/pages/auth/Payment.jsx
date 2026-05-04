@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProcessPaymentMutation } from '../../features/ApplicationApi';
@@ -45,7 +46,7 @@ const StripeCardForm = ({ clientSecret, intentLoading, fetchClientSecret, event,
       const { error, paymentIntent } = await stripeRef.current.confirmCardPayment(clientSecret, {
         payment_method: { card: cardElementRef.current },
       });
-      if (error) { alert(`Payment failed: ${error.message}`); setIsProcessing(false); return; }
+      if (error) { toast.error(`Payment failed: ${error.message}`); setIsProcessing(false); return; }
 
       await processPaymentMutation({
         id: event._id || event.id,
@@ -66,10 +67,10 @@ const StripeCardForm = ({ clientSecret, intentLoading, fetchClientSecret, event,
         },
       }).unwrap();
 
-      alert(`✅ Payment successful!\n${ticketCount} ${ticketType} ticket(s) for ${event.title}\nTotal: $${totalAmount}`);
+      toast.success(`✅ Payment successful!\n${ticketCount} ${ticketType} ticket(s) for ${event.title}\nTotal: $${totalAmount}`);
       navigate('/');
     } catch (err) {
-      alert(`Payment error: ${err.message}`);
+      toast.error(`Payment error: ${err.message}`);
     }
     setIsProcessing(false);
   };
@@ -95,6 +96,7 @@ const Payment = () => {
   const [ticketCount, setTicketCount] = useState(1);
   const [clientSecret, setClientSecret] = useState(null);
   const [intentLoading, setIntentLoading] = useState(false);
+  const [processPaymentMutation] = useProcessPaymentMutation();
 
   let actualPrice = price;
   if (!actualPrice && event) {
@@ -118,7 +120,7 @@ const Payment = () => {
       if (!data.clientSecret) throw new Error(data.message || 'Failed to get payment intent');
       setClientSecret(data.clientSecret);
     } catch (err) {
-      alert(`Could not initialize payment: ${err.message}`);
+      toast.error(`Could not initialize payment: ${err.message}`);
     }
     setIntentLoading(false);
   };
@@ -128,17 +130,12 @@ const Payment = () => {
       const availableSeats = ticketType === 'VIP' ? event.vipSeats : event.regularSeats;
       
       if (ticketCount > availableSeats) {
-        alert(`Only ${availableSeats} ${ticketType} tickets available. Cannot book ${ticketCount} tickets.`);
+        toast.error(`Only ${availableSeats} ${ticketType} tickets available. Cannot book ${ticketCount} tickets.`);
         return;
       }
 
       // Simulate payment processing
-      alert(`Processing ${paymentMethod} payment for $${totalAmount}...`);
-      const paymentData = { Title: event.title, eventId: event._id ||
-         event.id, userId: user?.id || user?._id, userName: user?.name || 
-         'Guest', eventTitle: event.title, ticketType, ticketCount, unitPrice: price * 100,
-          totalAmount: totalAmount * 100, paymentMethod, paymentDate: new Date().toISOString(),
-           status: 'completed', ...(stripeToken && { stripeTokenId: stripeToken.id }) }
+      toast.info(`Processing ${paymentMethod} payment for $${totalAmount}...`);
 
       setTimeout(() => {
         const success = Math.random() > 0.1; // 90% success rate
@@ -168,20 +165,20 @@ const Payment = () => {
           processPaymentMutation({ id: event._id || event.id, paymentData })
             .unwrap()
             .then(() => {
-              alert(`✅ ${paymentMethod} payment successful for ${ticketCount} ${ticketType} ticket(s)!\nTotal Amount: $${totalAmount}\nEvent: ${event.title}`);
+              toast.success(`✅ ${paymentMethod} payment successful for ${ticketCount} ${ticketType} ticket(s)!\nTotal Amount: $${totalAmount}\nEvent: ${event.title}`);
               navigate('/');
             })
             .catch((error) => {
               console.error('Payment API error:', error);
-              alert(`✅ Payment successful but failed to save to database: ${error.data?.message || error.message}`); // More specific error
+              toast.warning(`✅ Payment successful but failed to save to database: ${error.data?.message || error.message}`); // More specific error
               navigate('/');
             });
         } else {
-          alert(`❌ ${paymentMethod} payment failed. Please try again.`);
+          toast.error(`❌ ${paymentMethod} payment failed. Please try again.`);
         }
       }, 2000);
     } catch (error) {
-      alert(`Payment error: ${error.message}`);
+      toast.error(`Payment error: ${error.message}`);
     }
   };
 
@@ -259,7 +256,7 @@ const Payment = () => {
                       if (ticketCount + 1 <= availableSeats) {
                         setTicketCount(ticketCount + 1);
                       } else {
-                        alert(`Only ${availableSeats} ${ticketType} tickets available!`);
+                        toast.warning(`Only ${availableSeats} ${ticketType} tickets available!`);
                       }
                     }}
                     className="bg-gray-200 px-2 py-1 rounded"
