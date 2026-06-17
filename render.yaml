@@ -1,0 +1,8 @@
+routes:
+  - type: rewrite
+    source: /*
+<<<<<<< HEAD
+    destination: /index.html
+=======
+    destination: /index.html
+>>>>>>> 6aa71e777c96f52bb6b1637256f1da683cfaf5f7
